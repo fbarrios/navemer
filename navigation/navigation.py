@@ -1,5 +1,6 @@
 
 import csv
+from random import randrange
 from pygraph.classes.digraph import digraph as pydigraph
 from pygraph.algorithms.minmax import shortest_path
 
@@ -26,13 +27,13 @@ def load_intersections(city):
 
         for record in intersections_file:
             num = int(record[0])
-            x_model = float(record[1])
-            y_model = float(record[2])
             x = float(record[3])
             y = float(record[4])
 
+            intersection = Intersection(num, x, y)
+
             city.add_node(num)
-            city.add_node_attribute(num, ("position", (x_model, y_model)))
+            city.add_node_attribute(num, ("intersection", intersection))
 
 
 def load_blocks(city):
@@ -56,19 +57,32 @@ def load_blocks(city):
                 city.add_edge(edge, block_type, name, ("block", block))
 
 
-def main():
-    n1 = 450
-    n2 = 2560
-
+def get_random_route():
     city = get_city()
+
+    node_count = len(city.nodes())
+    n1 = randrange(1, node_count)
+    n2 = randrange(1, node_count)
+
     span, dists = shortest_path(city, n1)
 
     path = [n2]
     node_prev = n2
     while node_prev != n1:
+        if node_prev not in span:
+            return []
+
         node_curr = span[node_prev]
         path.append(node_curr)
         node_prev = node_curr
 
+    path.reverse()
 
-main()
+    route = []
+    for intersection in path:
+        intersection = city.node_attributes(intersection)[0][1]
+        route.append(intersection.get_coordinates())
+
+    return route
+
+
