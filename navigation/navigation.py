@@ -1,6 +1,7 @@
 
 import csv
 from pygraph.classes.digraph import digraph as pydigraph
+from pygraph.algorithms.minmax import shortest_path
 
 from intersection import Intersection
 from block import Block
@@ -29,9 +30,9 @@ def load_intersections(city):
             y_model = float(record[2])
             x = float(record[3])
             y = float(record[4])
-            intersection = Intersection(num, x_model, y_model, x, y)
 
-            city.add_node(num, ("intersection", intersection))
+            city.add_node(num)
+            city.add_node_attribute(num, ("position", (x_model, y_model)))
 
 
 def load_blocks(city):
@@ -55,4 +56,19 @@ def load_blocks(city):
                 city.add_edge(edge, block_type, name, ("block", block))
 
 
+def main():
+    n1 = 450
+    n2 = 2560
 
+    city = get_city()
+    span, dists = shortest_path(city, n1)
+
+    path = [n2]
+    node_prev = n2
+    while node_prev != n1:
+        node_curr = span[node_prev]
+        path.append(node_curr)
+        node_prev = node_curr
+
+
+main()
