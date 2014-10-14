@@ -4,7 +4,8 @@ import pygame
 from pygame.locals import *
 
 WINDOW_SIZE = (1006, 397)
-LINE_COLOR = pygame.Color(255, 255, 255)
+BACKGROUND_COLOR = pygame.Color(255, 0, 0)
+LINE_COLOR = pygame.Color(70, 70, 125)
 
 REFERENCE2_R = (-58.38621971856072, -34.68458626030405)
 REFERENCE2_M = (238, 68)
@@ -15,10 +16,10 @@ REFERENCE1_M = (485, 239)
 
 def convert(p):
     cx = (REFERENCE1_M[0] - REFERENCE2_M[0]) / (REFERENCE1_R[0] - REFERENCE2_R[0])
-    x = cx * (REFERENCE1_R[0] - p[0]) + REFERENCE1_M[0]
+    x = -cx * (REFERENCE1_R[0] - p[0]) + REFERENCE1_M[0]
 
     cy = (REFERENCE1_M[1] - REFERENCE2_M[1]) / (REFERENCE1_R[1] - REFERENCE2_R[1])
-    y = cy * (REFERENCE1_R[1] - p[1]) + REFERENCE1_M[1]
+    y = -cy * (REFERENCE1_R[1] - p[1]) + REFERENCE1_M[1]
     return int(x), int(y)
 
 
@@ -28,26 +29,11 @@ def main():
     background = pygame.image.load('map.png').convert()
     screen.blit(background, (0, 0))
 
-    '''
-    point_prev = None
-    for point_current in test_route:
-        if point_prev is None:
-            point_prev = point_current
-            continue
+    for i in range(len(test_route) - 1):
+        map_prev = convert(test_route[i])
+        map_current = convert(test_route[i + 1])
 
-        map_prev = convert(point_prev)
-        map_current = convert(point_current)
-
-        pygame.draw.line(screen, LINE_COLOR, map_prev, map_current, 2)
-
-        point_prev = point_current
-    '''
-
-    for point in test_route:
-        pygame.draw.circle(screen, LINE_COLOR, convert(point), 4, 4)
-
-        pygame.display.update()
-        pygame.time.delay(100)
+        pygame.draw.line(screen, LINE_COLOR, map_prev, map_current, 4)
 
     while True:
         for event in pygame.event.get():
@@ -95,12 +81,7 @@ test_route = [
     (-58.38257681572532, -34.67565249951224),
     (-58.38268360005692, -34.67555633921609),
     (-58.38369772221737, -34.67473203866276),
-    (-58.38463190664574, -34.67549968555901),
-    (-58.37555922960053, -34.6905536694991),
-    (-58.37634890620792, -34.68986586444252),
-    (-58.37736540162192, -34.68898622444274),
-    (-58.37816347192872, -34.68829290276174),
-    (-58.37854771235283, -34.68860802809196)
+    (-58.38463190664574, -34.67549968555901)
 ]
 
 main()
