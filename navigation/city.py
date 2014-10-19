@@ -50,6 +50,20 @@ class City(object):
         i2 = self.get_random_intersection()
         return self.get_route_between_intersections(i1, i2)
 
+    def get_closest_intersection_to_point(self, point):
+        closest_intersection = None
+        closest_distance = float("inf")
+
+        for intersection in self.city.nodes():
+            intersection = self.city.node_attributes(intersection)[0][1]
+            distance = intersection.point.distance(point)
+
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_intersection = intersection
+
+        return closest_intersection
+
 
 
 # Loads the city as a graph in memory.
