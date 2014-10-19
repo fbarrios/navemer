@@ -81,7 +81,7 @@ def get_random_route():
     route = []
     for intersection in path:
         intersection = city.node_attributes(intersection)[0][1]
-        route.append(intersection.get_coordinates())
+        route.append(intersection.get_point())
 
     return route
 
