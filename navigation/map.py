@@ -22,11 +22,9 @@ def main():
     screen.blit(background, (0, 0))
 
     # Draws a random route taken from the navigation module.
-    route = city.get_random_route()
-    for i in range(len(route) - 1):
-        map_prev = route[i].convert_to_map_point().get_tuple()
-        map_current = route[i + 1].convert_to_map_point().get_tuple()
-        pygame.draw.line(screen, LINE_COLOR, map_prev, map_current, 4)
+    init_point = city.get_random_intersection()
+    end_point = city.get_random_intersection()
+    draw_route(screen, city.get_route_between_intersections(init_point, end_point))
 
     while True:
         for event in pygame.event.get():
@@ -42,5 +40,11 @@ def main():
         pygame.display.update()
         pygame.time.delay(10)
 
+
+def draw_route(screen, route):
+    for i in range(len(route) - 1):
+        map_prev = route[i].point.convert_to_map_point().get_tuple()
+        map_current = route[i + 1].point.convert_to_map_point().get_tuple()
+        pygame.draw.line(screen, LINE_COLOR, map_prev, map_current, 4)
 
 main()

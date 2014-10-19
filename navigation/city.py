@@ -15,12 +15,15 @@ class City(object):
 
     def __init__(self):
         self.city = get_city()
+        self.intersection_count = len(self.city.nodes())
 
-    def get_random_route(self):
-        node_count = len(self.city.nodes())
-        n1 = randrange(1, node_count)
-        n2 = randrange(1, node_count)
+    def get_random_intersection(self):
+        int_id = randrange(1, self.intersection_count)
+        return self.city.node_attributes(int_id)[0][1]
 
+    def get_route_between_intersections(self, i1, i2):
+        n1 = i1.id
+        n2 = i2.id
         span, dists = shortest_path(self.city, n1)
 
         path = [n2]
@@ -38,9 +41,15 @@ class City(object):
         route = []
         for intersection in path:
             intersection = self.city.node_attributes(intersection)[0][1]
-            route.append(intersection.point)
+            route.append(intersection)
 
         return route
+
+    def get_random_route(self):
+        i1 = self.get_random_intersection()
+        i2 = self.get_random_intersection()
+        return self.get_route_between_intersections(i1, i2)
+
 
 
 # Loads the city as a graph in memory.
