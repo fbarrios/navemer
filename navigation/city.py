@@ -11,6 +11,38 @@ BLOCKS_FILE = "city/blocks.csv"
 INTERSECTIONS_FILE = "city/intersections.csv"
 
 
+class City(object):
+
+    def __init__(self):
+        self.city = get_city()
+
+    def get_random_route(self):
+        node_count = len(self.city.nodes())
+        n1 = randrange(1, node_count)
+        n2 = randrange(1, node_count)
+
+        span, dists = shortest_path(self.city, n1)
+
+        path = [n2]
+        node_prev = n2
+        while node_prev != n1:
+            if node_prev not in span:
+                return []
+
+            node_curr = span[node_prev]
+            path.append(node_curr)
+            node_prev = node_curr
+
+        path.reverse()
+
+        route = []
+        for intersection in path:
+            intersection = self.city.node_attributes(intersection)[0][1]
+            route.append(intersection.point)
+
+        return route
+
+
 # Loads the city as a graph in memory.
 def get_city():
     city = pydigraph()
@@ -55,34 +87,3 @@ def load_blocks(city):
             if not block.single_hand:
                 edge = (intersection_id_2, intersection_id_1)
                 city.add_edge(edge, block_type, name, ("block", block))
-
-
-def get_random_route():
-    city = get_city()
-
-    node_count = len(city.nodes())
-    n1 = randrange(1, node_count)
-    n2 = randrange(1, node_count)
-
-    span, dists = shortest_path(city, n1)
-
-    path = [n2]
-    node_prev = n2
-    while node_prev != n1:
-        if node_prev not in span:
-            return []
-
-        node_curr = span[node_prev]
-        path.append(node_curr)
-        node_prev = node_curr
-
-    path.reverse()
-
-    route = []
-    for intersection in path:
-        intersection = city.node_attributes(intersection)[0][1]
-        route.append(intersection.get_point())
-
-    return route
-
-

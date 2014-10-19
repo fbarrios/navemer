@@ -47,4 +47,11 @@ class MapPoint(Point):
     """ Converts a point in the map to a point in KML coordinates.
     """
     def convert_to_kml_point(self):
-        return KMLPoint(0, 0)
+        cx = (REFERENCE1_R[0] - REFERENCE2_R[0]) / (REFERENCE1_M[0] - REFERENCE2_M[0])
+        x = -cx * (REFERENCE1_M[0] - self.x) + REFERENCE1_R[0]
+
+        cy = (REFERENCE1_R[1] - REFERENCE2_R[1]) / (REFERENCE1_M[1] - REFERENCE2_M[1])
+        y = -cy * (REFERENCE1_M[1] - self.y) + REFERENCE1_R[1]
+        return KMLPoint(x, y)
+
+

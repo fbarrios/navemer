@@ -8,9 +8,7 @@ class Intersection(object):
         self.id = num
         self.x = x
         self.y = y
+        self.point = KMLPoint(self.x, self.y)
 
     def get_coordinates(self):
         return self.x, self.y
-
-    def get_point(self):
-        return KMLPoint(self.x, self.y)

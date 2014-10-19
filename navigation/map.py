@@ -3,7 +3,8 @@
 
 import pygame
 from pygame.locals import *
-from navigation import get_random_route
+from city import City
+from point import MapPoint
 
 # Miscellaneous constants.
 MAP_FILE = "city/map.png"
@@ -13,6 +14,7 @@ LINE_COLOR = pygame.Color(70, 70, 125)
 
 
 def main():
+    city = City()
     pygame.init()
     screen = pygame.display.set_mode(WINDOW_SIZE)
     pygame.display.set_caption(WINDOW_CAPTION)
@@ -20,7 +22,7 @@ def main():
     screen.blit(background, (0, 0))
 
     # Draws a random route taken from the navigation module.
-    route = get_random_route()
+    route = city.get_random_route()
     for i in range(len(route) - 1):
         map_prev = route[i].convert_to_map_point().get_tuple()
         map_current = route[i + 1].convert_to_map_point().get_tuple()
@@ -35,7 +37,6 @@ def main():
                 return
 
             elif event.type == MOUSEBUTTONDOWN:
-                print event.pos
                 pygame.draw.line(screen, LINE_COLOR, (320, 240), event.pos, 2)
 
         pygame.display.update()
