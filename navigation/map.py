@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 # -*- coding: latin-1
 
 # Proyect libraries
@@ -32,48 +32,22 @@ class GameWindow(Gtk.Window):
         self.set_title(WINDOW_CAPTION)
         self.add(self.vbox)
 
-        # Initialize the City backend part (Must be created before the Drawing Area)
+        # Initialize the City backend part 
+        # (Must be created before the Drawing Area)
         self.city = City()
         self.storage = Drawable_Object_Storage()
-        self.init_point = None
-        self.end_point = None
 
+        # Create the PyGtk Interface
         self.create_window_interface()
-
-        # Add some buttons
-        '''
-        hbox = Gtk.HBox(2, False)
-        combo = Gtk.ComboBoxText()
-        combo.append_text("BIRD")
-        combo.append_text("IS")
-        combo.set_active(0)
-        vbox.pack_end(hbox, False, False, 0)
-
-        self.button = Gtk.Button("Toggle Draw Area")
-        self.button.connect("clicked", self.button_clicked, None)
-        hbox.pack_end(combo, False, False, 0)
-        hbox.pack_end(self.button, False, False, 0)
-        hbox.show_all()
-        '''
     
 
     def create_window_interface(self):
-        # Zone 1
         self.create_menu()
-
         # Zone 2 
         # TODO
-
-        # Zone 3
         self.create_map()
-
-        # Zone 4
-        self.create_origin_block_interface()
-
-        # Zone 5
-        self.create_destination_block_interface()
-
-        # Zone 6
+        self.create_source_block_interface()
+        self.create_dest_block_interface()
         self.create_toggle_button()
 
 
@@ -113,14 +87,18 @@ class GameWindow(Gtk.Window):
 
     def create_map(self):
         #create the drawing area
+        hbox = Gtk.HBox(False, 0)
         da = Gtk.DrawingArea()
         da.set_size_request(WINDOW_SIZE[0], WINDOW_SIZE[1])
-        self.vbox.pack_start(da, False, False, 0)
+
+        hbox.pack_start(da, True, False, 0)
+        self.vbox.pack_start(hbox, False, False, 0)
+
         da.connect("realize", self._realized)
-        da.show()
+        hbox.show_all()
 
 
-    def create_origin_block_interface(self):
+    def create_source_block_interface(self):
         vbox = Gtk.VBox(False, 5)
         self.vbox.pack_start(vbox, False, False, 0)
 
@@ -136,22 +114,28 @@ class GameWindow(Gtk.Window):
         label_street_1 = Gtk.Label()
         label_street_1.set_text("Calle Origen 1:   ")
 
-        cb_street_1 = Gtk.ComboBoxText()
-        cb_street_1.append_text("Campillo")
-        cb_street_1.set_active(0)
+        self.cb_source_street_1 = Gtk.ComboBoxText()
+        streets = self.city.get_streets()
+
+        self.cb_source_street_1.set_active(0)
         hbox_street_1.pack_start(label_street_1, False, False, 5)
-        hbox_street_1.pack_start(cb_street_1, False, False, 0)
+        hbox_street_1.pack_start(self.cb_source_street_1, False, False, 0)
 
         # Street 2
         hbox_street_2 = Gtk.HBox(False, 5)
         label_street_2 = Gtk.Label()
         label_street_2.set_text("Calle Origen 2:   ")
 
-        cb_street_2 = Gtk.ComboBoxText()
-        cb_street_2.append_text("Torrent")
-        cb_street_2.set_active(0)
+        self.cb_source_street_2 = Gtk.ComboBoxText()
+        self.cb_source_street_2.append_text("Torrent")
+        self.cb_source_street_2.set_active(0)
         hbox_street_2.pack_start(label_street_2, False, False, 5)
-        hbox_street_2.pack_start(cb_street_2, False, False, 0)
+        hbox_street_2.pack_start(self.cb_source_street_2, False, False, 0)
+
+        # Add the signal for the comboboxes
+        self.cb_source_street_1.connect("changed", 
+                                        self.combobox_change, 
+                                        self.cb_source_street_2)
 
         # Add the streets to the container
         vbox.pack_start(hseparator, False, False, 0)
@@ -161,7 +145,7 @@ class GameWindow(Gtk.Window):
         vbox.show_all()
 
 
-    def create_destination_block_interface(self):
+    def create_dest_block_interface(self):
         vbox = Gtk.VBox(False, 5)
         self.vbox.pack_start(vbox, False, False, 0)
 
@@ -177,22 +161,29 @@ class GameWindow(Gtk.Window):
         label_street_1 = Gtk.Label()
         label_street_1.set_text("Calle Destino 1:   ")
 
-        cb_street_1 = Gtk.ComboBoxText()
-        cb_street_1.append_text("Avenida Paseo Colon")
-        cb_street_1.set_active(0)
+        self.cb_dest_street_1 = Gtk.ComboBoxText()
+        self.cb_dest_street_1.append_text("Avenida Paseo Colon")
+        self.cb_dest_street_1.append_text("Avenida Lalala")
+        self.cb_dest_street_1.set_active(0)
+
         hbox_street_1.pack_start(label_street_1, False, False, 5)
-        hbox_street_1.pack_start(cb_street_1, False, False, 0)
+        hbox_street_1.pack_start(self.cb_dest_street_1, False, False, 0)
 
         # Street 2
         hbox_street_2 = Gtk.HBox(False, 5)
         label_street_2 = Gtk.Label()
         label_street_2.set_text("Calle Destino 2:   ")
 
-        cb_street_2 = Gtk.ComboBoxText()
-        cb_street_2.append_text("Avenida Independencia")
-        cb_street_2.set_active(0)
+        self.cb_dest_street_2 = Gtk.ComboBoxText()
+        self.cb_dest_street_2.append_text("Avenida Independencia")
+        self.cb_dest_street_2.set_active(0)
         hbox_street_2.pack_start(label_street_2, False, False, 5)
-        hbox_street_2.pack_start(cb_street_2, False, False, 0)
+        hbox_street_2.pack_start(self.cb_dest_street_2, False, False, 0)
+
+        # Add the signal for the comboboxes
+        self.cb_dest_street_1.connect("changed", 
+                                      self.combobox_change, 
+                                      self.cb_dest_street_2)
 
         # Add the streets to the container
         vbox.pack_start(hseparator, False, False, 0)
@@ -217,6 +208,10 @@ class GameWindow(Gtk.Window):
         vbox.pack_start(hbox, False, False, 0)
 
         vbox.show_all()
+
+
+    def combobox_change(self, widget, data):
+        print "Heyy, has changed. The other combo has the street %s" % data.get_active_text()
 
 
     def change_system_state(self, widget, data):

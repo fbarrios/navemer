@@ -6,6 +6,7 @@ from pygraph.algorithms.minmax import shortest_path
 
 from intersection import Intersection
 from block import Block
+from Street import Street
 
 BLOCKS_FILE = "city/blocks.csv"
 INTERSECTIONS_FILE = "city/intersections.csv"
@@ -16,10 +17,15 @@ class City(object):
     def __init__(self):
         self.city = get_city()
         self.intersection_count = len(self.city.nodes())
+        # Dictionary where the streets will be stored
+        self.streets = {}
+        self.load_streets()
+
 
     def get_random_intersection(self):
         int_id = randrange(1, self.intersection_count)
         return self.city.node_attributes(int_id)[0][1]
+
 
     def get_route_between_intersections(self, i1, i2):
         n1 = i1.id
@@ -45,10 +51,12 @@ class City(object):
 
         return route
 
+
     def get_random_route(self):
         i1 = self.get_random_intersection()
         i2 = self.get_random_intersection()
         return self.get_route_between_intersections(i1, i2)
+
 
     def get_closest_intersection_to_point(self, point):
         closest_intersection = None
@@ -64,6 +72,45 @@ class City(object):
 
         return closest_intersection
 
+
+    def load_streets(self):
+        with open(BLOCKS_FILE) as fp:
+            blocks_file = csv.reader(fp)
+
+            for record in blocks_file:
+                # For every record, get the intersections and add 
+                # them to the streets. If the street doesn't exists, create it
+
+                name = record[1]
+                intersection_id_1 = int(record[4])
+                intersection_id_2 = int(record[5])
+
+                street = None
+                try:
+                    street = self.streets[name]
+                except:
+                    street = Street(name)
+                    self.streets[name] = street
+
+                street.add_intersection(intersection_id_1)
+                street.add_intersection(intersection_id_2)
+
+
+    def get_streets(self):
+        return self.streets
+
+
+    # Return the streets names that intersect with the street given as a parameter
+    def get_streets_names_who_intersect_with_a_street(self, rhs_street):
+        streets_names = set()
+
+        for street in self.streets.itervalues():
+            if rhs_street.get_name() != street:
+                # Check if the streets has an intersection
+                if len( rhs.street.intersect_street(street)) != 0:
+                    streets_name.add( street.get_name() )
+
+        return streets_names
 
 
 # Loads the city as a graph in memory.
