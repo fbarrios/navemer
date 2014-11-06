@@ -12,6 +12,12 @@ class Drawable_Object_Storage(object):
 	def add_object(self, drawable_object):
 		self._object_storage[drawable_object.id()] = drawable_object
 
+	def get_object(self, object_id):
+		try:
+			return self._object_storage[object_id]
+		except:
+			return -1
+
 	def remove_object(self, object_id):
 		try:
 			del self._object_storage[object_id]

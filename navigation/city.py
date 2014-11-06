@@ -29,6 +29,10 @@ class City(object):
         return self.city.node_attributes(int_id)[0][1]
 
 
+    def get_intersection(self, intersection_id):
+        return self.city.node_attributes(intersection_id)[0][1]
+
+
     def get_route_between_intersections(self, intersection_id1, intersection_id2):
         n1 = intersection_id1
         n2 = intersection_id2

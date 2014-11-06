@@ -8,7 +8,7 @@ from point import MapPoint
 from Drawable_Objects.Line import Line
 from Drawable_Objects.Route import Route
 from Drawable_Objects.Drawable_Object_Storage import Drawable_Object_Storage
-
+from Drawable_Objects.Dynamic_Object import Dynamic_Object
 # Pygame libraries
 import os
 import pygame
@@ -42,7 +42,7 @@ class GameWindow(Gtk.Window):
 
         # Create the PyGtk Interface
         self.create_window_interface()
-    
+
 
     def create_window_interface(self):
         self.create_menu()
@@ -254,30 +254,39 @@ class GameWindow(Gtk.Window):
 
             # Get the intersections of the streets
             streets = self.city.get_streets()
+
             street1_source = streets[self.cb_source_street_1.get_active_text()]
             street2_source = streets[self.cb_source_street_2.get_active_text()]
-
             intersection_source = street1_source.intersect_street(street2_source)
-            print intersection_source
 
             street1_dest = streets[self.cb_dest_street_1.get_active_text()]
             street2_dest = streets[self.cb_dest_street_2.get_active_text()]
-
             intersection_dest = street1_dest.intersect_street(street2_dest)
-            print intersection_dest
 
             # Draw the route
             try:
                 route = self.city.get_route_between_intersections(list(intersection_source)[0],
-                                                              list(intersection_dest)[0])
+                                                                  list(intersection_dest)[0])
                 self.create_and_add_route(route)
             except:
                 print "FATAL ERROR. Intersection not calculated properly"
+
+            # Draw the ambulance
+            if self.ambulance_id != -1:
+                int_source = self.city.get_intersection(list(intersection_source)[0])
+                ambulance = self.storage.get_object(self.ambulance_id)
+                pos = int_source.point.convert_to_map_point().get_tuple()
+                ambulance.set_pos(pos)
+                ambulance.visible = True
 
         else:
             # TODO: Ugly, try to improve this mechanism
             if self.last_route_id != -1:
                 self.storage.remove_object(self.last_route_id)
+
+            if self.ambulance_id != -1:
+                ambulance = self.storage.get_object(self.ambulance_id)
+                ambulance.visible = False
 
             self.last_route_id = -1
             widget.set_label("Calcular Ruta Óptima")
@@ -320,6 +329,12 @@ class GameWindow(Gtk.Window):
         self.background = pygame.image.load(MAP_FILE).convert()
         self.screen = pygame.display.get_surface()
         GObject.timeout_add(10, self.draw)
+
+        # Create an add an ambulance (make it invisible until someone clicked the toggle button)
+        ambulance = Dynamic_Object(self.screen, (0,0), "Drawable_Objects/ambulance.jpg")
+        ambulance.visible = False
+        self.ambulance_id = ambulance.id()
+        self.storage.add_object(ambulance)
 
 
     def create_and_add_route(self, route, line_color=None):
