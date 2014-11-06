@@ -15,10 +15,10 @@ class Street(object):
 		return self._name
 
 	def add_intersection(self, intersection_id):
-		self._intesertions.add(intersection_id)
+		self._intersections.add(intersection_id)
 
 	def get_intersections(self):
 		return self._intersections
 
 	def intersect_street(self, street):
-		return self._intersections.intersect( street.get_intersections() )
+		return self._intersections.intersection( street.get_intersections() )

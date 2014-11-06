@@ -32,6 +32,9 @@ class GameWindow(Gtk.Window):
         self.set_title(WINDOW_CAPTION)
         self.add(self.vbox)
 
+        # TODO: Ugly, try to improve this mechanism
+        self.last_route_id = -1
+
         # Initialize the City backend part 
         # (Must be created before the Drawing Area)
         self.city = City()
@@ -114,10 +117,7 @@ class GameWindow(Gtk.Window):
         label_street_1 = Gtk.Label()
         label_street_1.set_text("Calle Origen 1:   ")
 
-        self.cb_source_street_1 = Gtk.ComboBoxText()
-        streets = self.city.get_streets()
-
-        self.cb_source_street_1.set_active(0)
+        self.cb_source_street_1 = Gtk.ComboBoxText()        
         hbox_street_1.pack_start(label_street_1, False, False, 5)
         hbox_street_1.pack_start(self.cb_source_street_1, False, False, 0)
 
@@ -127,10 +127,19 @@ class GameWindow(Gtk.Window):
         label_street_2.set_text("Calle Origen 2:   ")
 
         self.cb_source_street_2 = Gtk.ComboBoxText()
-        self.cb_source_street_2.append_text("Torrent")
-        self.cb_source_street_2.set_active(0)
         hbox_street_2.pack_start(label_street_2, False, False, 5)
         hbox_street_2.pack_start(self.cb_source_street_2, False, False, 0)
+
+
+        # Fill the combo box one (has all the street) and the second combo
+        streets = self.city.get_streets()
+        for street in streets.itervalues():
+            self.cb_source_street_1.append_text(street.get_name())
+        self.cb_source_street_1.set_active(random.randint(0, len(streets)-1))
+
+        self.fill_second_combo_box(streets, 
+                                   self.cb_source_street_1, 
+                                   self.cb_source_street_2)
 
         # Add the signal for the comboboxes
         self.cb_source_street_1.connect("changed", 
@@ -162,9 +171,6 @@ class GameWindow(Gtk.Window):
         label_street_1.set_text("Calle Destino 1:   ")
 
         self.cb_dest_street_1 = Gtk.ComboBoxText()
-        self.cb_dest_street_1.append_text("Avenida Paseo Colon")
-        self.cb_dest_street_1.append_text("Avenida Lalala")
-        self.cb_dest_street_1.set_active(0)
 
         hbox_street_1.pack_start(label_street_1, False, False, 5)
         hbox_street_1.pack_start(self.cb_dest_street_1, False, False, 0)
@@ -180,6 +186,16 @@ class GameWindow(Gtk.Window):
         hbox_street_2.pack_start(label_street_2, False, False, 5)
         hbox_street_2.pack_start(self.cb_dest_street_2, False, False, 0)
 
+        # Fill the combo box one (has all the street) and the second combo
+        streets = self.city.get_streets()
+        for street in streets.itervalues():
+            self.cb_dest_street_1.append_text(street.get_name())
+        self.cb_dest_street_1.set_active(random.randint(0, len(streets)-1))
+
+        self.fill_second_combo_box(streets, 
+                                   self.cb_dest_street_1, 
+                                   self.cb_dest_street_2)
+
         # Add the signal for the comboboxes
         self.cb_dest_street_1.connect("changed", 
                                       self.combobox_change, 
@@ -191,6 +207,22 @@ class GameWindow(Gtk.Window):
         vbox.pack_start(hbox_street_1, False, False, 0)
         vbox.pack_start(hbox_street_2, False, False, 0)
         vbox.show_all()
+
+
+    def fill_second_combo_box(self, streets, combo1, combo2):
+        # Fill the second combo box (has the streets that 
+        # intersects with the street on the combo 1)
+        street_one = streets[combo1.get_active_text()]
+        intersection = self.city.get_streets_names_who_intersect_with_a_street(street_one)
+
+        model = combo2.get_model()
+        model.clear()
+        combo2.set_model(model)
+
+        for intersected_street in intersection:
+            combo2.append_text(intersected_street)
+
+        combo2.set_active(random.randint(0, len(intersection)-1))
 
 
     def create_toggle_button(self):
@@ -211,30 +243,44 @@ class GameWindow(Gtk.Window):
 
 
     def combobox_change(self, widget, data):
-        print "Heyy, has changed. The other combo has the street %s" % data.get_active_text()
+        streets = self.city.get_streets()
+        street_one = streets[widget.get_active_text()]
+        self.fill_second_combo_box(streets, widget, data)
 
 
     def change_system_state(self, widget, data):
         if widget.get_active() == True:
             widget.set_label("Desactivar Sistema")
+
+            # Get the intersections of the streets
+            streets = self.city.get_streets()
+            street1_source = streets[self.cb_source_street_1.get_active_text()]
+            street2_source = streets[self.cb_source_street_2.get_active_text()]
+
+            intersection_source = street1_source.intersect_street(street2_source)
+            print intersection_source
+
+            street1_dest = streets[self.cb_dest_street_1.get_active_text()]
+            street2_dest = streets[self.cb_dest_street_2.get_active_text()]
+
+            intersection_dest = street1_dest.intersect_street(street2_dest)
+            print intersection_dest
+
+            # Draw the route
+            try:
+                route = self.city.get_route_between_intersections(list(intersection_source)[0],
+                                                              list(intersection_dest)[0])
+                self.create_and_add_route(route)
+            except:
+                print "FATAL ERROR. Intersection not calculated properly"
+
         else:
-            widget.set_label("Calcular Ruta Optima")
+            # TODO: Ugly, try to improve this mechanism
+            if self.last_route_id != -1:
+                self.storage.remove_object(self.last_route_id)
 
-
-    '''
-    def key_pressed(self, widget, event, data=None):
-        # Draws a random route taken from the navigation module.
-        if self.init_point == None:
-            self.init_point = self.city.get_random_intersection()
-            self.end_point = self.city.get_random_intersection()
-        else:
-            self.init_point = self.end_point
-            self.end_point = self.city.get_random_intersection()
-
-        self.create_and_add_route( 
-            self.city.get_route_between_intersections(self.init_point, 
-                                                      self.end_point))
-    '''
+            self.last_route_id = -1
+            widget.set_label("Calcular Ruta Óptima")
         
 
     def show_dialog(self, widget, data=None):
@@ -291,6 +337,12 @@ class GameWindow(Gtk.Window):
             lines.append(Line(self.screen, map_prev, map_current, 5, line_color))
 
         route = Route(self.screen, lines)
+
+        # TODO: Ugly, try to improve this mechanism
+        if self.last_route_id != -1:
+            self.storage.remove_object(self.last_route_id)
+
+        self.last_route_id = route.id()
         self.storage.add_object(route)
 
         return route

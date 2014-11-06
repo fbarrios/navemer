@@ -1,5 +1,6 @@
 
 import csv
+import collections
 from random import randrange
 from pygraph.classes.digraph import digraph as pydigraph
 from pygraph.algorithms.minmax import shortest_path
@@ -20,6 +21,7 @@ class City(object):
         # Dictionary where the streets will be stored
         self.streets = {}
         self.load_streets()
+        self.streets = collections.OrderedDict(sorted(self.streets.items()))
 
 
     def get_random_intersection(self):
@@ -27,9 +29,9 @@ class City(object):
         return self.city.node_attributes(int_id)[0][1]
 
 
-    def get_route_between_intersections(self, i1, i2):
-        n1 = i1.id
-        n2 = i2.id
+    def get_route_between_intersections(self, intersection_id1, intersection_id2):
+        n1 = intersection_id1
+        n2 = intersection_id2
         span, dists = shortest_path(self.city, n1)
 
         path = [n2]
@@ -105,12 +107,17 @@ class City(object):
         streets_names = set()
 
         for street in self.streets.itervalues():
-            if rhs_street.get_name() != street:
+            if rhs_street.get_name() != street.get_name():
                 # Check if the streets has an intersection
-                if len( rhs.street.intersect_street(street)) != 0:
-                    streets_name.add( street.get_name() )
+                if len( rhs_street.intersect_street(street)) != 0:
+                    streets_names.add( street.get_name() )
 
-        return streets_names
+        street_list = []
+        for street_name in streets_names:
+            street_list.append(street_name)
+
+        street_list.sort()
+        return street_list
 
 
 # Loads the city as a graph in memory.
